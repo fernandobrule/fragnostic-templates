@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export FRAGNOSTIC_TEMPLATES_BASE_PATH=/Users/fernandobrule/Clones/fragnostic/fragnostic-code/fragnostic-templates/fragnostic-templates/src/test/resources/templates
+
+./sbt -v -213

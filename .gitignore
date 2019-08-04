@@ -1,0 +1,17 @@
+*.class
+*.dont
+*.ear
+*.gen
+*.iml
+*.jar
+*.log
+*.war
+*.*~
+.DS_Store
+.classpath
+.idea
+.project
+.settings
+bin
+dist
+target
