@@ -1,0 +1,4 @@
+*.scala linguist-vendored 
+sbt linguist-detectable=false
+runwithenvars linguist-detectable=false
+
