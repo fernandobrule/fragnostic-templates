@@ -7,13 +7,15 @@ import com.fragnostic.support.{ FilesSupport, MapSupport }
 import com.fragnostic.templates.service.api.TemplateServiceApi
 import org.slf4j.{ Logger, LoggerFactory }
 
+import scala.annotation.tailrec
+
 trait TemplateServiceMapImpl extends TemplateServiceApi {
 
   def templateService = new DefaultTemplateService
 
   class DefaultTemplateService extends TemplateServiceApi with FilesSupport with MapSupport {
 
-    private def logger: Logger = LoggerFactory.getLogger(getClass.getName)
+    private[this] val logger: Logger = LoggerFactory.getLogger(getClass.getName)
 
     private val FRAGNOSTIC_TEMPLATES_BASE_PATH = CakeServiceConf.confService.getConf("FRAGNOSTIC_TEMPLATES_BASE_PATH")
       .map(templatesBasePath => templatesBasePath)
@@ -21,15 +23,20 @@ trait TemplateServiceMapImpl extends TemplateServiceApi {
 
     private def getKV: String => (String, String) = (line: String) => {
       val parts: Array[String] = line.split("->")
-      (parts(0).trim, parts(1).trim)
+      if (parts.length == 2) {
+        (parts(0).trim, parts(1).trim)
+      } else {
+        logger.error("getKV() - error al obtener (k,v) para la linea:\u0027{}\u0027", line)
+        ("NA", "NA")
+      }
     }
 
     private def valida: String => Boolean = (line: String) => !line.isEmpty && !line.trim.startsWith("#")
 
     private val extension: String =
-      readFileToList(s"$FRAGNOSTIC_TEMPLATES_BASE_PATH/templates.conf", StandardCharsets.UTF_8.name()).fold(
+      fileToList(s"$FRAGNOSTIC_TEMPLATES_BASE_PATH/templates.conf", StandardCharsets.UTF_8.name()).fold(
         error => {
-          logger.error("extension - error al obtener extension, on readFileToList")
+          logger.error("extension - error al obtener extension, on fileToList")
           "NA"
         },
         list => getMap(list, valida, getKV).getOrElse("file.extension", {
@@ -38,13 +45,14 @@ trait TemplateServiceMapImpl extends TemplateServiceApi {
         }))
 
     private val templates: Map[String, String] =
-      readFileToList(s"$FRAGNOSTIC_TEMPLATES_BASE_PATH/templates.map", StandardCharsets.UTF_8.name()).fold(
+      fileToList(s"$FRAGNOSTIC_TEMPLATES_BASE_PATH/templates.map", StandardCharsets.UTF_8.name()).fold(
         error => {
-          logger.error(s"templates - error on readFileToList : $error")
+          logger.error(s"templates - error on fileToList : $error")
           Map[String, String]()
         },
         list => getMap(list, valida, getKV))
 
+    @tailrec
     private def applyParam(template: String, params: List[(String, String)]): String =
       if (params.isEmpty) {
         template
@@ -60,7 +68,7 @@ trait TemplateServiceMapImpl extends TemplateServiceApi {
 
           if (logger.isInfoEnabled()) logger.info("getTemplate() -\n\t- name : {}\n\t- extension : {}\n\t- pathName : {}", name, extension, pathName)
 
-          readFileToString(pathName, Charset.defaultCharset().name()).fold(
+          fileToString(pathName, Charset.defaultCharset().name()).fold(
             error => Left("template.service.error.on.read.file.to.string"),
             template => {
 
