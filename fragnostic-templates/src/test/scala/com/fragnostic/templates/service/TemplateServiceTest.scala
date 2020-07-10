@@ -11,7 +11,7 @@ class TemplateServiceTest extends FunSpec with Matchers {
 
     it("Can Retrieve Template") {
 
-      CakeServiceTemplate.templateService.getTemplate("i.am.a.template", Option(List(("uno", "UNO"), ("dos", "DOS")))) fold (
+      CakeServiceTemplate.templateService.getTemplate(name = "i.am.a.template", params = Option(List(("uno", "UNO"), ("dos", "DOS")))) fold (
         error => throw new IllegalStateException(error),
         template =>
           template should be(
