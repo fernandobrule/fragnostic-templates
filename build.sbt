@@ -78,7 +78,7 @@ lazy val fragnosticTemplates = Project(
       logbackClassic,
       slf4jApi,
       scalatest,
-      fragnosticConf,
+      fragnosticConfEnv,
       fragnosticSupport
     ),
     description := "fragnostic-templates"

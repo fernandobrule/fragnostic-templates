@@ -2,7 +2,7 @@ package com.fragnostic.templates.service.impl
 
 import java.nio.charset.{ Charset, StandardCharsets }
 
-import com.fragnostic.conf.service.CakeServiceConf
+import com.fragnostic.conf.env.service.CakeConfEnvService
 import com.fragnostic.support.{ FilesSupport, MapSupport }
 import com.fragnostic.templates.service.api.TemplateServiceApi
 import org.slf4j.{ Logger, LoggerFactory }
@@ -17,9 +17,9 @@ trait TemplateServiceMapImpl extends TemplateServiceApi {
 
     private[this] val logger: Logger = LoggerFactory.getLogger(getClass.getName)
 
-    private val FRAGNOSTIC_TEMPLATES_BASE_PATH = CakeServiceConf.confService.getConf("FRAGNOSTIC_TEMPLATES_BASE_PATH")
-      .map(templatesBasePath => templatesBasePath)
-      .getOrElse(throw new IllegalStateException("template.service.error.on.get.templates.base.path"))
+    private val FRAGNOSTIC_TEMPLATES_BASE_PATH = CakeConfEnvService.confServiceApi.getString(key = "FRAGNOSTIC_TEMPLATES_BASE_PATH") fold (
+      error => throw new IllegalStateException("template.service.error.on.get.templates.base.path"),
+      opt => opt map (path => path) getOrElse (throw new IllegalStateException("template.service.error.on.get.templates.base.path")))
 
     private def getKV: String => (String, String) = (line: String) => {
       val parts: Array[String] = line.split("->")
